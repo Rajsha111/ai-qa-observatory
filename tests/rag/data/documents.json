@@ -1,0 +1,44 @@
+{
+  "documents": [
+  {
+    "id": "doc-001-vacation",
+    "content": "SOLARIS TECH — Annual Leave Policy. All full-time employees are entitled to exactly 27 days of paid vacation per calendar year. This is separate from the 10 public holidays observed by the company. Vacation requests must be submitted through the 'Portal-X' system at least 14 days in advance. Unused days do not carry over to the next year.",
+    "metadata": {
+      "topic": "hr-benefits",
+      "category": "vacation"
+    }
+  },
+  {
+    "id": "doc-002-remote-work",
+    "content": "SOLARIS TECH — Work from Anywhere Guidelines. Employees are required to be in the physical office on Tuesdays and Thursdays for 'Core Collaboration Days.' On Mondays, Wednesdays, and Fridays, employees have the option to work remotely. A monthly home-office stipend of $75 is provided to cover internet and electricity costs.",
+    "metadata": {
+      "topic": "office-policy",
+      "category": "remote-work"
+    }
+  },
+  {
+    "id": "doc-003-security",
+    "content": "SOLARIS TECH — Cybersecurity Protocol. Corporate passwords must be a minimum of 16 characters long and include at least one special character (!, @, #, or $). Passwords must be changed every 90 days. Sharing passwords via Slack or Email is a Tier-1 security violation and results in an immediate account freeze.",
+    "metadata": {
+      "topic": "it-security",
+      "category": "passwords"
+    }
+  },
+  {
+    "id": "doc-004-project-solaris",
+    "content": "PROJECT SOLARIS — External Research Initiative. Note: This is separate from the Solaris Tech corporate policies. Project Solaris is a deep-sea exploration mission funded by the Blue Water Group. It has a budget of $5 million and employs 12 marine biologists. It does not follow corporate HR rules.",
+    "metadata": {
+      "topic": "external-project",
+      "category": "distractor"
+    }
+  },
+  {
+    "id": "doc-005-reimbursement",
+    "content": "SOLARIS TECH — Travel Expenses. The company reimburses meals during business travel up to a maximum of $60 per day. Receipts are mandatory for any single expense exceeding $15. Economy class is the standard for all flights under 6 hours. For flights longer than 6 hours, Premium Economy is permitted.",
+    "metadata": {
+      "topic": "finance",
+      "category": "travel"
+    }
+  }
+  ]
+}

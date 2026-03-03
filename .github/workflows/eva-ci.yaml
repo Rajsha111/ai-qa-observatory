@@ -1,0 +1,36 @@
+eval:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v3
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+    - name: Install dependencies
+      run: npm install
+    - name: Run Promptfoo evaluation
+      run: npm run eval:ci
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    - name: qualit fali if pass rate < 80
+      run: |
+        node -e "
+              const fs = require('fs');
+              const data = JSON.parse(fs.readFileSync('eval-results.json', 'utf8'));
+              const { successes, failures } = data.stats;
+              const total = successes + failures;
+              const passRate = total > 0 ? successes / total : 0;
+              const pct = (passRate * 100).toFixed(1);
+              console.log('Pass rate: ' + pct + '% (' + successes + '/' + total + ')');
+              if (passRate < 0.8) {
+                console.error('FAIL: ' + pct + '% is below the 80% quality gate.');
+                process.exit(1);
+              }
+              console.log('PASS: Quality gate met.');
+            "
+    - name: Upload evaluation results
+      uses: actions/upload-artifact@v3
+      with:
+        name: eval-results.json
+        retention-days: 2
+        

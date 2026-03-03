@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG Test Guide — AI QA Observatory</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a; color: #e2e8f0; font-size: 14px; line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+      padding: 48px 40px 40px;
+      border-bottom: 1px solid #3730a3;
+    }
+    header h1 { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    header .subtitle { font-size: 14px; color: #a5b4fc; }
+    .tag {
+      display: inline-block; background: #3730a3; color: #c7d2fe;
+      font-size: 11px; font-weight: 700; letter-spacing: .06em;
+      padding: 3px 10px; border-radius: 20px; margin-top: 12px;
+    }
+
+    /* ── Layout ── */
+    main { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── Comparison table ── */
+    .comparison-wrapper { overflow-x: auto; margin-bottom: 56px; }
+    table.comparison {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      font-size: 13px;
+    }
+    table.comparison th {
+      background: #1e293b; color: #94a3b8; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .07em;
+      padding: 12px 16px; border-bottom: 2px solid #334155;
+      white-space: nowrap;
+    }
+    table.comparison td {
+      padding: 14px 16px; border-bottom: 1px solid #1e293b;
+      vertical-align: top; background: #0f172a;
+    }
+    table.comparison tr:hover td { background: #172033; }
+
+    .test-name {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 14px; white-space: nowrap;
+    }
+    .test-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .failure-mode { color: #f87171; font-size: 12px; }
+    .technique-badge {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      padding: 2px 8px; border-radius: 4px; white-space: nowrap;
+    }
+    .muted { color: #64748b; font-size: 12px; }
+
+    /* ── Section cards ── */
+    .section-title {
+      font-size: 20px; font-weight: 800; color: #fff;
+      margin-bottom: 4px; display: flex; align-items: center; gap: 10px;
+    }
+    .section-subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+
+    .test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 56px; }
+    @media (max-width: 900px) { .test-grid { grid-template-columns: 1fr; } }
+
+    .test-card {
+      background: #1e293b; border-radius: 12px;
+      border: 1px solid #334155; overflow: hidden;
+    }
+    .test-card-header {
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid #334155;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .test-card-header h3 { font-size: 15px; font-weight: 700; color: #fff; }
+    .test-card-header .num {
+      font-size: 11px; font-weight: 700; color: #64748b;
+      background: #0f172a; border-radius: 4px; padding: 1px 6px;
+    }
+    .test-card-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+
+    .label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: #64748b; margin-bottom: 4px;
+    }
+    .value { font-size: 13px; color: #cbd5e1; }
+
+    /* ── Steps ── */
+    .steps { display: flex; flex-direction: column; gap: 6px; }
+    .step {
+      display: flex; align-items: flex-start; gap: 10px; font-size: 13px;
+    }
+    .step-num {
+      width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; margin-top: 1px;
+    }
+    .step-text { color: #cbd5e1; }
+
+    /* ── Example boxes ── */
+    .example-box {
+      background: #0f172a; border-radius: 8px;
+      border: 1px solid #1e293b; padding: 12px 14px;
+    }
+    .example-row { display: flex; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+    .example-row:last-child { margin-bottom: 0; }
+    .ex-label {
+      font-weight: 700; min-width: 64px; flex-shrink: 0;
+      font-size: 10px; text-transform: uppercase; letter-spacing: .05em;
+      padding-top: 1px;
+    }
+    .ex-value { color: #cbd5e1; }
+
+    /* ── Assertion code ── */
+    .assert-block {
+      background: #020817; border-radius: 6px;
+      border-left: 3px solid #6366f1;
+      padding: 10px 14px; font-family: "SF Mono", Menlo, monospace;
+      font-size: 11px; color: #a5b4fc; white-space: pre;
+      overflow-x: auto;
+    }
+    .assert-block .comment { color: #334155; }
+    .assert-block .kw  { color: #f472b6; }
+    .assert-block .fn  { color: #60a5fa; }
+    .assert-block .str { color: #34d399; }
+    .assert-block .num { color: #fb923c; }
+
+    /* ── Verdict row ── */
+    .verdict-row { display: flex; gap: 12px; }
+    .verdict {
+      flex: 1; border-radius: 6px; padding: 8px 12px; font-size: 12px;
+    }
+    .verdict .v-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .05em; margin-bottom: 2px;
+    }
+    .verdict.pass { background: #052e16; border: 1px solid #166534; }
+    .verdict.pass .v-label { color: #4ade80; }
+    .verdict.pass .v-text  { color: #86efac; }
+    .verdict.fail { background: #1c0a0a; border: 1px solid #7f1d1d; }
+    .verdict.fail .v-label { color: #f87171; }
+    .verdict.fail .v-text  { color: #fca5a5; }
+
+    /* ── Technique colours ── */
+    .t-llm      { background: #312e81; color: #c7d2fe; }
+    .t-ragas    { background: #1e3a5f; color: #93c5fd; }
+    .t-string   { background: #1c2a1c; color: #86efac; }
+    .t-determ   { background: #2d1b00; color: #fbbf24; }
+    .t-twophase { background: #2a1c2e; color: #d8b4fe; }
+
+    /* ── Icon colours ── */
+    .i-faith  { background: #312e81; }
+    .i-prec   { background: #1e3a5f; }
+    .i-neg    { background: #1c2a1c; }
+    .i-ret    { background: #2d1b00; }
+    .i-stale  { background: #2a1c2e; }
+
+    /* ── How it flows diagram ── */
+    .flow { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+    .flow-box {
+      background: #0f172a; border: 1px solid #334155; border-radius: 5px;
+      padding: 4px 10px; font-size: 11px; color: #94a3b8; white-space: nowrap;
+    }
+    .flow-arrow { color: #4b5563; font-size: 12px; }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid #1e293b; margin: 48px 0; }
+
+    code {
+      background: #1e293b; padding: 1px 5px; border-radius: 3px;
+      font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: #a5b4fc;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>RAG Test Layers — Reference Guide</h1>
+  <div class="subtitle">AI QA Observatory · 5 test types, what each catches, how each works</div>
+  <span class="tag">tests/rag/</span>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════════════════════
+       COMPARISON TABLE
+  ══════════════════════════════════════════════════════════ -->
+  <div style="margin-bottom: 12px; margin-top: 36px;">
+    <div class="section-title">At a Glance</div>
+    <div class="section-subtitle">Side-by-side comparison of all 5 RAG test types</div>
+  </div>
+
+  <div class="comparison-wrapper">
+    <table class="comparison">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Test Type</th>
+          <th>File</th>
+          <th>Failure Mode It Catches</th>
+          <th>Technique</th>
+          <th>What the Assertion Checks</th>
+          <th>Pass Condition</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td style="color:#64748b;font-weight:700">01</td>
+          <td>
+            <div class="test-name">
+              <div class="test-icon i-faith">🧪</div>
+              Faithfulness
+            </div>
+          </td>
+          <td><code>faithfulness.test.ts</code></td>
+          <td class="failure-mode">Answer contains claims NOT grounded in retrieved chunks — model drew from training memory instead of the KB</td>
+          <td>
+            <span class="technique-badge t-llm">LLM-as-Judge</span><br><br>
+            <span class="technique-badge t-ragas">Ragas</span>
+          </td>
+          <td class="value">Each claim in the answer is mapped back to a specific chunk sentence. Score = supported_claims / total_claims</td>
+          <td class="value">LLM score ≥ 0.85 <br>Ragas score ≥ 0.85</td>
+        </tr>
+
+        <tr>
+          <td style="color:#64748b;font-weight:700">02</td>
+          <td>
+            <div class="test-name">
+              <div class="test-icon i-prec">🎯</div>
+              Context Precision
+            </div>
+          </td>
+          <td><code>precision.test.ts</code></td>
+          <td class="failure-mode">Top-K retrieved chunks are irrelevant — garbage in, garbage out. LLM can't answer from off-topic context</td>
+          <td>
+            <span class="technique-badge t-llm">LLM-as-Judge<br>(per chunk)</span>
+          </td>
+          <td class="value">Each chunk scored 0–1 for relevance to the query. Precision = relevant_chunks / K</td>
+          <td class="value">≥ 2 of 3 chunks score ≥ 0.7</td>
+        </tr>
+
+        <tr>
+          <td style="color:#64748b;font-weight:700">03</td>
+          <td>
+            <div class="test-name">
+              <div class="test-icon i-neg">🚫</div>
+              Negative
+            </div>
+          </td>
+          <td><code>negative.test.ts</code></td>
+          <td class="failure-mode">System answers confidently about topics NOT in the KB — hallucinating from training data</td>
+          <td>
+            <span class="technique-badge t-string">String / Phrase Matching</span>
+          </td>
+          <td class="value">Answer must contain a refusal phrase ("I don't have information about…"). Confident answer = hallucination = FAIL</td>
+          <td class="value">Response contains any configured refusal phrase</td>
+        </tr>
+
+        <tr>
+          <td style="color:#64748b;font-weight:700">04</td>
+          <td>
+            <div class="test-name">
+              <div class="test-icon i-ret">🔍</div>
+              Retrieval Unit
+            </div>
+          </td>
+          <td><code>retrieval-unit.test.ts</code></td>
+          <td class="failure-mode">After changing embedding model or chunk size, a known query no longer retrieves the correct document</td>
+          <td>
+            <span class="technique-badge t-determ">Deterministic Source ID Match</span>
+          </td>
+          <td class="value">Known query → specific doc ID must appear in top-K results. No LLM needed — pure vector similarity regression</td>
+          <td class="value">Expected source ID present in any of the top-K retrieved chunks</td>
+        </tr>
+
+        <tr>
+          <td style="color:#64748b;font-weight:700">05</td>
+          <td>
+            <div class="test-name">
+              <div class="test-icon i-stale">🔄</div>
+              Stale Data
+            </div>
+          </td>
+          <td><code>stale-data.test.ts</code></td>
+          <td class="failure-mode">After a document update, the system still returns old information — stale embedding not replaced</td>
+          <td>
+            <span class="technique-badge t-twophase">Two-Phase Ingest + Content Assertion</span>
+          </td>
+          <td class="value">Phase 1: v1 answer contains old value. Phase 2: v2 answer contains new value AND old value is absent</td>
+          <td class="value">Both phases pass + old value absent from v2 answer</td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════════════════════════
+       DETAILED CARDS
+  ══════════════════════════════════════════════════════════ -->
+  <div style="margin-bottom: 24px;">
+    <div class="section-title">Deep Dive — Each Test Type</div>
+    <div class="section-subtitle">Failure mode, technique, step-by-step flow, concrete example, and the actual assertion</div>
+  </div>
+
+  <div class="test-grid">
+
+    <!-- ── 1. FAITHFULNESS ── -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-icon i-faith">🧪</div>
+        <div>
+          <div class="num">01</div>
+          <h3>Faithfulness</h3>
+        </div>
+        <span class="technique-badge t-llm" style="margin-left:auto">LLM-as-Judge + Ragas</span>
+      </div>
+      <div class="test-card-body">
+
+        <div>
+          <div class="label">Failure Mode</div>
+          <div class="value">The LLM answer contains facts that came from its training data, not from the retrieved chunks. Even if the answer is factually correct, it's untestable — you can't tell where the fact came from.</div>
+        </div>
+
+        <div>
+          <div class="label">How It Works</div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:#312e81;color:#c7d2fe">1</div>
+              <div class="step-text">Call <code>/query</code> → get answer + retrieved chunks</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:#312e81;color:#c7d2fe">2</div>
+              <div class="step-text">Ask LLM judge: "List every claim in the answer. For each claim, find supporting evidence in these chunks."</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:#312e81;color:#c7d2fe">3</div>
+              <div class="step-text">Score = supported_claims / total_claims</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:#312e81;color:#c7d2fe">4</div>
+              <div class="step-text">Also send to Ragas <code>/evaluate</code> for standardised NLI-based score (comparable across teams)</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Concrete Example</div>
+          <div class="example-box">
+            <div class="example-row">
+              <span class="ex-label" style="color:#a5b4fc">Query</span>
+              <span class="ex-value">"What is the minimum password length at Solaris Tech?"</span>
+            </div>
+            <div class="example-row">
+              <span class="ex-label" style="color:#94a3b8">Chunk</span>
+              <span class="ex-value">"Passwords must be a minimum of 16 characters…"</span>
+            </div>
+            <div class="example-row">
+              <span class="ex-label" style="color:#4ade80">Answer ✓</span>
+              <span class="ex-value">"16 characters" → supported by chunk → score: 1.0</span>
+            </div>
+            <div class="example-row">
+              <span class="ex-label" style="color:#f87171">Answer ✗</span>
+              <span class="ex-value">"12 characters (industry standard)" → not in chunk → hallucination</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Key Assertion</div>
+          <div class="assert-block"><span class="fn">expect</span>(score).<span class="fn">toBeGreaterThanOrEqual</span>(<span class="num">0.85</span>);
+<span class="comment">// Ragas threshold: at most 1 in 7 claims unsupported</span></div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="verdict pass">
+            <div class="v-label">✓ Pass</div>
+            <div class="v-text">All claims trace back to a chunk sentence</div>
+          </div>
+          <div class="verdict fail">
+            <div class="v-label">✗ Fail</div>
+            <div class="v-text">Answer adds facts not present in any chunk</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 2. CONTEXT PRECISION ── -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-icon i-prec">🎯</div>
+        <div>
+          <div class="num">02</div>
+          <h3>Context Precision</h3>
+        </div>
+        <span class="technique-badge t-llm" style="margin-left:auto">LLM-as-Judge (per chunk)</span>
+      </div>
+      <div class="test-card-body">
+
+        <div>
+          <div class="label">Failure Mode</div>
+          <div class="value">The top-K retrieved chunks are irrelevant to the query. Even a perfect LLM can't produce a good answer from the wrong context — garbage in, garbage out.</div>
+        </div>
+
+        <div>
+          <div class="label">How It Works</div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:#1e3a5f;color:#93c5fd">1</div>
+              <div class="step-text">Call <code>/query</code> with <code>topK=3</code> → get 3 chunks</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:#1e3a5f;color:#93c5fd">2</div>
+              <div class="step-text">For each chunk: ask LLM judge "Score 0–1 how relevant this chunk is to the query. Give a reason."</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:#1e3a5f;color:#93c5fd">3</div>
+              <div class="step-text">Count chunks with score ≥ 0.7</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:#1e3a5f;color:#93c5fd">4</div>
+              <div class="step-text">Assert: at least N of K chunks are relevant</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Concrete Example</div>
+          <div class="example-box">
+            <div class="example-row">
+              <span class="ex-label" style="color:#a5b4fc">Query</span>
+              <span class="ex-value">"What are the password requirements?"</span>
+            </div>
+            <div class="example-row">
+              <span class="ex-label" style="color:#4ade80">Chunk 1 ✓</span>
+              <span class="ex-value">security policy doc → relevance: 0.98 → relevant</span>
+            </div>
+            <div class="example-row">
+              <span class="ex-label" style="color:#4ade80">Chunk 2 ✓</span>
+              <span class="ex-value">password change cadence → relevance: 0.85 → relevant</span>
+            </div>
+            <div class="example-row">
+              <span class="ex-label" style="color:#f87171">Chunk 3 ✗</span>
+              <span class="ex-value">vacation policy doc → relevance: 0.12 → irrelevant</span>
+            </div>
+            <div class="example-row">
+              <span class="ex-label" style="color:#94a3b8">Precision</span>
+              <span class="ex-value">2/3 = 0.67 → PASS (≥ 2 required)</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Key Assertion</div>
+          <div class="assert-block"><span class="kw">const</span> relevantCount = scored.<span class="fn">filter</span>(s => s >= <span class="num">0.7</span>).length;
+<span class="fn">expect</span>(relevantCount).<span class="fn">toBeGreaterThanOrEqual</span>(MIN_RELEVANT_CHUNKS);</div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="verdict pass">
+            <div class="v-label">✓ Pass</div>
+            <div class="v-text">Most retrieved chunks are topically relevant to the query</div>
+          </div>
+          <div class="verdict fail">
+            <div class="v-label">✗ Fail</div>
+            <div class="v-text">Retriever pulled in off-topic chunks — embedding alignment issue</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 3. NEGATIVE ── -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-icon i-neg">🚫</div>
+        <div>
+          <div class="num">03</div>
+          <h3>Negative (Hallucination Detection)</h3>
+        </div>
+        <span class="technique-badge t-string" style="margin-left:auto">Phrase Matching</span>
+      </div>
+      <div class="test-card-body">
+
+        <div>
+          <div class="label">Failure Mode</div>
+          <div class="value">A confident answer to a question that isn't in the KB at all. The LLM uses its training data to fill the gap. In compliance / legal / medical contexts this is dangerous — the user trusts the answer.</div>
+        </div>
+
+        <div>
+          <div class="label">How It Works</div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:#1c2a1c;color:#86efac">1</div>
+              <div class="step-text">Load out-of-KB questions from <code>test-cases.json</code> (topics not in any document)</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:#1c2a1c;color:#86efac">2</div>
+              <div class="step-text">Call <code>/query</code> for each question</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:#1c2a1c;color:#86efac">3</div>
+              <div class="step-text">Check if the answer contains any configured refusal phrase (e.g. "I don't have information", "not covered in", "I cannot")</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:#1c2a1c;color:#86efac">4</div>
+              <div class="step-text">No refusal phrase = hallucination detected = FAIL</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Concrete Example</div>
+          <div class="example-box">
+            <div class="example-row">
+              <span class="ex-label" style="color:#a5b4fc">Query</span>
+              <span class="ex-value">"How many vacation days do Solaris Tech employees get?" (NOT in KB)</span>
+            </div>
+            <div class="example-row">
+              <span class="ex-label" style="color:#4ade80">Answer ✓</span>
+              <span class="ex-value">"I don't have information about vacation days in the knowledge base."</span>
+            </div>
+            <div class="example-row">
+              <span class="ex-label" style="color:#f87171">Answer ✗</span>
+              <span class="ex-value">"Employees typically receive 15 days per year." (from training data — hallucination)</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Key Assertion</div>
+          <div class="assert-block"><span class="kw">function</span> <span class="fn">containsRefusal</span>(text) {
+  <span class="kw">return</span> REFUSAL_PHRASES.<span class="fn">some</span>(p => text.<span class="fn">includes</span>(p));
+}
+<span class="fn">expect</span>(<span class="fn">containsRefusal</span>(data.answer)).<span class="fn">toBe</span>(<span class="kw">true</span>);</div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="verdict pass">
+            <div class="v-label">✓ Pass</div>
+            <div class="v-text">System politely declines — "I don't have that information"</div>
+          </div>
+          <div class="verdict fail">
+            <div class="v-label">✗ Fail</div>
+            <div class="v-text">System invents an answer from training data — live hallucination caught</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 4. RETRIEVAL UNIT ── -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-icon i-ret">🔍</div>
+        <div>
+          <div class="num">04</div>
+          <h3>Retrieval Unit Test</h3>
+        </div>
+        <span class="technique-badge t-determ" style="margin-left:auto">Deterministic Source ID Match</span>
+      </div>
+      <div class="test-card-body">
+
+        <div>
+          <div class="label">Failure Mode</div>
+          <div class="value">After swapping embedding models, changing chunk size, or re-indexing documents, a known query no longer retrieves the correct document. The pipeline is silently degraded.</div>
+        </div>
+
+        <div>
+          <div class="label">How It Works</div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:#2d1b00;color:#fbbf24">1</div>
+              <div class="step-text">Define ground-truth pairs in <code>test-cases.json</code>: query → expected doc ID</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:#2d1b00;color:#fbbf24">2</div>
+              <div class="step-text">Call <code>/query</code> with <code>topK=3</code></div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:#2d1b00;color:#fbbf24">3</div>
+              <div class="step-text">Extract the <code>source</code> field from each retrieved chunk</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:#2d1b00;color:#fbbf24">4</div>
+              <div class="step-text">Assert: expected doc ID appears anywhere in the top-K list</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Concrete Example</div>
+          <div class="example-box">
+            <div class="example-row">
+              <span class="ex-label" style="color:#a5b4fc">Query</span>
+              <span class="ex-value">"What is the minimum password length?"</span>
+            </div>
+            <div class="example-row">
+              <span class="ex-label" style="color:#94a3b8">Expected</span>
+              <span class="ex-value"><code>doc-003-security</code> must appear in top-3</span>
+            </div>
+            <div class="example-row">
+              <span class="ex-label" style="color:#4ade80">Got ✓</span>
+              <span class="ex-value">[doc-003-security(0.94), doc-001-vacation(0.41), doc-002(0.38)]</span>
+            </div>
+            <div class="example-row">
+              <span class="ex-label" style="color:#f87171">Got ✗</span>
+              <span class="ex-value">[doc-001-vacation(0.61), doc-005(0.55), doc-002(0.44)] — wrong top hit after model swap</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Key Assertion</div>
+          <div class="assert-block"><span class="kw">const</span> sources = data.retrievedChunks.<span class="fn">map</span>(c => c.source);
+<span class="fn">expect</span>(
+  sources.<span class="fn">some</span>(s => s.<span class="fn">includes</span>(expectedSource))
+).<span class="fn">toBe</span>(<span class="kw">true</span>);</div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="verdict pass">
+            <div class="v-label">✓ Pass</div>
+            <div class="v-text">Expected document appears in top-K — retrieval is stable</div>
+          </div>
+          <div class="verdict fail">
+            <div class="v-label">✗ Fail</div>
+            <div class="v-text">Regression after model/chunk change — the right doc is no longer retrieved</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 5. STALE DATA (full width) ── -->
+    <div class="test-card" style="grid-column: 1 / -1;">
+      <div class="test-card-header">
+        <div class="test-icon i-stale">🔄</div>
+        <div>
+          <div class="num">05</div>
+          <h3>Stale Data — Update Propagation</h3>
+        </div>
+        <span class="technique-badge t-twophase" style="margin-left:auto">Two-Phase Ingest + Content Assertion</span>
+      </div>
+      <div class="test-card-body">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+          <div>
+            <div class="label">Failure Mode</div>
+            <div class="value">After a document is updated and re-ingested, the system still returns the old value. The stale embedding was not replaced — both versions now exist in the vector store. The bug is silent: no errors, no crashes, just wrong answers delivered with confidence.</div>
+            <br>
+            <div class="label">Why This Happens</div>
+            <div class="value">Vector stores don't automatically replace embeddings on re-ingest. Calling <code>from_documents()</code> with an updated doc ADDS a new vector alongside the old one. Both coexist. Queries may retrieve either version non-deterministically.</div>
+          </div>
+
+          <div>
+            <div class="label">How It Works — Two Phases</div>
+            <div class="steps">
+              <div class="step">
+                <div class="step-num" style="background:#2a1c2e;color:#d8b4fe">1</div>
+                <div class="step-text"><strong>Clear</strong> collection → ingest <strong>v1</strong> document (e.g. "data retention: 90 days")</div>
+              </div>
+              <div class="step">
+                <div class="step-num" style="background:#2a1c2e;color:#d8b4fe">2</div>
+                <div class="step-text">Query → assert answer contains <strong>"90"</strong> (baseline confirmed)</div>
+              </div>
+              <div class="step">
+                <div class="step-num" style="background:#2a1c2e;color:#d8b4fe">3</div>
+                <div class="step-text"><strong>Clear</strong> collection again → ingest <strong>v2</strong> document ("data retention: 60 days")</div>
+              </div>
+              <div class="step">
+                <div class="step-num" style="background:#2a1c2e;color:#d8b4fe">4</div>
+                <div class="step-text">Query → assert answer contains <strong>"60"</strong> AND does <em>not</em> contain <strong>"90"</strong></div>
+              </div>
+            </div>
+            <br>
+            <div class="muted">If step 3 skips the clear, both embeddings exist → phase 4 is non-deterministic → you've found the staleness bug.</div>
+          </div>
+
+        </div>
+
+        <div>
+          <div class="label">Concrete Example</div>
+          <div class="example-box" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div>
+              <div style="color:#d8b4fe;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Phase 1 — v1 Ingest</div>
+              <div class="example-row">
+                <span class="ex-label" style="color:#a5b4fc">Doc v1</span>
+                <span class="ex-value">"Data must be retained for 90 days"</span>
+              </div>
+              <div class="example-row">
+                <span class="ex-label" style="color:#94a3b8">Query</span>
+                <span class="ex-value">"How long must data be retained?"</span>
+              </div>
+              <div class="example-row">
+                <span class="ex-label" style="color:#4ade80">Answer ✓</span>
+                <span class="ex-value">"90 days" → baseline confirmed</span>
+              </div>
+            </div>
+            <div>
+              <div style="color:#d8b4fe;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Phase 2 — v2 Re-Ingest</div>
+              <div class="example-row">
+                <span class="ex-label" style="color:#a5b4fc">Doc v2</span>
+                <span class="ex-value">"Data must be retained for 60 days" (policy updated)</span>
+              </div>
+              <div class="example-row">
+                <span class="ex-label" style="color:#94a3b8">Query</span>
+                <span class="ex-value">"How long must data be retained?"</span>
+              </div>
+              <div class="example-row">
+                <span class="ex-label" style="color:#4ade80">Answer ✓</span>
+                <span class="ex-value">"60 days" + no mention of "90" → propagation works</span>
+              </div>
+              <div class="example-row">
+                <span class="ex-label" style="color:#f87171">Answer ✗</span>
+                <span class="ex-value">"90 days" still returned → stale embedding bug</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Key Assertions</div>
+          <div class="assert-block"><span class="comment">// Phase 1 — baseline</span>
+<span class="fn">expect</span>(v1Answer.<span class="fn">toLowerCase</span>()).<span class="fn">toMatch</span>(<span class="str">/\b90\b/</span>);
+
+<span class="comment">// Phase 2 — new value present</span>
+<span class="fn">expect</span>(v2Answer.<span class="fn">toLowerCase</span>()).<span class="fn">toMatch</span>(<span class="str">/\b60\b/</span>);
+
+<span class="comment">// Phase 2 — old value absent (stale embedding removed)</span>
+<span class="fn">expect</span>(v2Answer).<span class="fn">not</span>.<span class="fn">toMatch</span>(<span class="str">/\b90\b/</span>);</div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="verdict pass">
+            <div class="v-label">✓ Pass</div>
+            <div class="v-text">After re-ingestion: new value returned, old value gone. Your update pipeline correctly replaces stale embeddings.</div>
+          </div>
+          <div class="verdict fail">
+            <div class="v-label">✗ Fail</div>
+            <div class="v-text">Old value still returned after update. Both embeddings exist in the store — your re-ingest skipped the delete step.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- end grid -->
+
+  <hr>
+
+  <!-- ══════════════════════════════════════════════════════════
+       TECHNIQUE REFERENCE
+  ══════════════════════════════════════════════════════════ -->
+  <div style="margin-bottom: 24px;">
+    <div class="section-title">Technique Reference</div>
+    <div class="section-subtitle">The 4 evaluation techniques used across all test types</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px">
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <span class="technique-badge t-llm">LLM-as-Judge</span>
+        <span class="muted" style="margin-left:auto">Used in: Faithfulness, Precision</span>
+      </div>
+      <div class="test-card-body">
+        <div class="value">You write a prompt asking Claude to evaluate Claude's output. The judge scores the answer on a specific dimension (grounding, relevance) and returns structured JSON with a score and reasoning.</div>
+        <div>
+          <div class="label">Why it's used</div>
+          <div class="value">Full control over what "faithful" or "relevant" means for your domain. Can score nuanced criteria that regex can't. Fast — no extra infra beyond your existing Claude SDK.</div>
+        </div>
+        <div>
+          <div class="label">Limitation</div>
+          <div class="value">Scores vary slightly run-to-run (temperature). Use thresholds (≥ 0.85), not exact values. Use a cheaper model (Haiku) as judge — the evaluation task is simpler than generation.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <span class="technique-badge t-ragas">Ragas</span>
+        <span class="muted" style="margin-left:auto">Used in: Faithfulness</span>
+      </div>
+      <div class="test-card-body">
+        <div class="value">Standardised RAG evaluation library. Uses NLI (Natural Language Inference) internally to check if each answer claim is entailed by the context. Scores are reproducible and comparable across teams.</div>
+        <div>
+          <div class="label">Why it's used</div>
+          <div class="value">Widely cited in research. Interviewers and stakeholders recognise it. Good for CI quality gates and benchmarking — gives you a number you can track over time.</div>
+        </div>
+        <div>
+          <div class="label">Limitation</div>
+          <div class="value">Runs in Python, requires the Flask microservice. Uses OpenAI internally by default. Slower than LLM-as-Judge. Less customisable for domain-specific criteria.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <span class="technique-badge t-string">Phrase Matching</span>
+        <span class="muted" style="margin-left:auto">Used in: Negative</span>
+      </div>
+      <div class="test-card-body">
+        <div class="value">The simplest possible evaluation: check if the answer contains one of a configured list of refusal phrases. No LLM needed. Fast and deterministic.</div>
+        <div>
+          <div class="label">Why it's used</div>
+          <div class="value">For binary yes/no questions ("did the system refuse?") string matching is sufficient and faster. LLM-as-Judge would be overkill and introduce false negatives from judge variability.</div>
+        </div>
+        <div>
+          <div class="label">Limitation</div>
+          <div class="value">Depends on the refusal phrase list in <code>rag.config.json</code>. Too strict (exact match) → false failures. Too loose → false passes. Tune the phrase list for your system's actual refusal language.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <span class="technique-badge t-determ">Deterministic Source Match</span>
+        <span class="muted" style="margin-left:auto">Used in: Retrieval Unit</span>
+      </div>
+      <div class="test-card-body">
+        <div class="value">No LLM involved. Directly check the <code>source</code> field of retrieved chunks against a pre-defined ground-truth mapping: this query should always return this doc ID.</div>
+        <div>
+          <div class="label">Why it's used</div>
+          <div class="value">Retrieval (vector similarity) is deterministic for a given embedding model. The same query should always retrieve the same top chunk. This makes it unit-testable — you know the exact expected output.</div>
+        </div>
+        <div>
+          <div class="label">When to run</div>
+          <div class="value">Every time you: swap embedding models, change chunk size/overlap, modify similarity thresholds, or re-index documents. This is your regression guard for the retrieval layer.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+</body>
+</html>

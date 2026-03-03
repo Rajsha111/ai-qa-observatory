@@ -1,0 +1,74 @@
+{
+  "faithfulnessQueries": [
+    {
+      "query": "How many days of paid vacation are full-time employees entitled to per year?",
+      "description": "Specific numeric fact — must be exactly 27, not the 14 days notice period or 10 public holidays."
+    },
+    {
+      "query": "What are the required in-office days at Solaris Tech?",
+      "description": "Conditional logic — must correctly identify Tuesday and Thursday as the core days."
+    },
+    {
+      "query": "What is the minimum character length and special character requirement for passwords?",
+      "description": "Technical constraints — should identify 16 characters and the list of 4 approved special characters."
+    }
+  ],
+  "precisionQueries": [
+    {
+      "query": "What is the penalty for sharing a password via Slack or Email?",
+      "description": "Security policy — should specifically retrieve the IT Security doc (doc-003)."
+    },
+    {
+      "query": "What are the rules for booking flights that are longer than 6 hours?",
+      "description": "Travel policy — should retrieve the Finance doc (doc-005) despite being a 'travel' query."
+    },
+    {
+      "query": "What is the monthly stipend amount provided for remote work expenses?",
+      "description": "Financial benefit — should retrieve the Remote Work doc (doc-002)."
+    }
+  ],
+  "negativeQueries": [
+    {
+      "query": "Who is the current CEO of Solaris Tech?",
+      "category": "Corporate Leadership / HR"
+    },
+    {
+      "query": "Does the company offer dental and vision insurance?",
+      "category": "Benefits / Health"
+    },
+    {
+      "query": "What is the process for submitting a hardware upgrade request?",
+      "category": "IT / Operations"
+    },
+    {
+      "query": "What is the annual bonus percentage for Senior Engineers?",
+      "category": "Finance / Compensation"
+    },
+    {
+      "query": "How do I book a meeting room in the physical office?",
+      "category": "Office Management"
+    }
+  ],
+  "retrievalExpectations": [
+    {
+      "query": "Which software system is used to submit vacation requests?",
+      "expectedSource": "doc-001-vacation",
+      "description": "Portal-X system lookup"
+    },
+    {
+      "query": "How much is the budget for the deep-sea exploration mission?",
+      "expectedSource": "doc-004-project-solaris",
+      "description": "Distractor handling — should link the mission budget to the external project, not corporate finance."
+    },
+    {
+      "query": "What is the maximum daily reimbursement for meals during business travel?",
+      "expectedSource": "doc-005-reimbursement",
+      "description": "Finance policy lookup"
+    },
+    {
+      "query": "How often must employees change their corporate passwords?",
+      "expectedSource": "doc-003-security",
+      "description": "IT rotation cycle lookup"
+    }
+  ]
+}

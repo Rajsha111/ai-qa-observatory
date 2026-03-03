@@ -1,0 +1,18 @@
+Rate how relevant this retrieved chunk is to the query.
+
+Query: "{{query}}"
+
+Retrieved Chunk:
+{{chunk}}
+
+Score Guide:
+- 1.0: Directly answers the query or contains the specific information asked for
+- 0.7: Closely related — useful supporting context
+- 0.4: Tangentially related — on the same topic but not helpful for this query
+- 0.1: Irrelevant or off-topic
+
+Respond ONLY with JSON (no prose):
+{
+  "score": 0.XX,
+  "reason": "one sentence explaining the score"
+}

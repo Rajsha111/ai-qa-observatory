@@ -1,0 +1,24 @@
+# RAG Microservice Dependencies
+# Install: pip install -r requirements.txt
+#
+# Package breakdown:
+#
+# flask               — HTTP server, keeps this a clean microservice
+# llama-index-core    — orchestration layer: document ingestion, retrieval, indexing
+# llama-index-embeddings-openai  — text-embedding-3-small adapter
+# llama-index-llms-anthropic      — Claude adapter for answer generation
+# llama-index-vector-stores-chroma — bridge between LlamaIndex and ChromaDB
+# chromadb            — local vector store (stores embeddings + metadata)
+# ragas               — standardized RAG evaluation metrics (Faithfulness, ContextPrecision)
+# anthropic           — direct SDK for answer generation calls
+# python-dotenv       — reads .env from the project root
+
+flask>=3.0.0
+llama-index-core>=0.12.0,<1.0.0
+llama-index-embeddings-openai>=0.2.0,<1.0.0
+llama-index-llms-anthropic>=0.3.0,<1.0.0
+llama-index-vector-stores-chroma>=0.3.0,<1.0.0
+chromadb>=0.6.0,<1.0.0
+ragas>=0.2.0,<0.3.0
+anthropic>=0.35.0
+python-dotenv>=1.0.0

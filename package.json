@@ -1,0 +1,44 @@
+{
+  "name": "ai-qa-observatory",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node -r tsconfig-paths/register src/target-app/server.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:e2e": "playwright test",
+    "eval": "promptfoo eval --config tests/eval/promptfoo.yaml",
+    "eval:view": "promptfoo view",
+    "drift": "ts-node -r tsconfig-paths/register tests/eval/drift-detector.ts",
+    "eval:ci": "promptfoo eval --config tests/eval/promptfoo.yaml --output eval-results.json",
+    "test:rag": "vitest run tests/rag/ --reporter=verbose --fileParallelism=false",
+    "test:rag:faithfulness": "vitest run tests/rag/faithfulness.test.ts --reporter=verbose",
+    "test:rag:precision": "vitest run tests/rag/precision.test.ts --reporter=verbose",
+    "test:rag:negative": "vitest run tests/rag/negative.test.ts --reporter=verbose",
+    "test:rag:retrieval": "vitest run tests/rag/retrieval-unit.test.ts --reporter=verbose",
+    "test:rag:stale": "vitest run tests/rag/stale-data.test.ts --reporter=verbose",
+    "test:rag:report": "ts-node -r tsconfig-paths/register tests/rag/report.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.3.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18",
+    "promptfoo": "^0.103.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@huggingface/inference": "^4.13.14",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "openai": "^6.25.0"
+  }
+}

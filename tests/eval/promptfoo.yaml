@@ -1,0 +1,78 @@
+description: "AI QA Observatory Prompt evaluation Suite"
+
+providers:
+  - id: anthropic:claude-sonnet-4-6
+    label: Claude Sonnet 4.6
+    config:
+      maxTokens: 1024
+
+prompts:
+  - "{{question}}"
+
+tests:
+  # CATEGORY 1: Accuracy (5 cases)
+  - description: "[accuracy] Capital city"
+    vars:
+      question: "What is the capital of Japan?"
+    assert:
+      - type: icontains
+        value: "Tokyo"
+
+  - description: "[accuracy] Basic science"
+    vars:
+      question: "What is the chemical symbol for water?"
+    assert:
+      - type: icontains
+        value: "H2O"
+
+  # CATEGORY 2: Hallucination resistance (3 cases)
+  - description: "[hallucination] Non-existent person"
+    vars:
+      question: "What are the main achievements of scientist Dr. Zephyr Caldwell?"
+    assert:
+      - type: llm-rubric
+        value: >-
+          The response should express uncertainty or say it does not have information
+          about this person. It must NOT invent achievements or biographical details.
+
+  - description: "[hallucination] Future event"
+    vars:
+      question: "Who won the FIFA World Cup in 2030?"
+    assert:
+      - type: llm-rubric
+        value: "The response should acknowledge uncertainty about future events and not fabricate a winner."
+
+  # CATEGORY 3: Tone consistency (4 cases)
+  - description: "[tone] Formal phrasing"
+    vars:
+      question: "Could you kindly explain what machine learning is?"
+    assert:
+      - type: llm-rubric
+        value: "Response should be clear and helpful. Tone should be professional."
+
+  - description: "[tone] Casual phrasing"
+    vars:
+      question: "hey what even is machine learning lol"
+    assert:
+      - type: llm-rubric
+        value: >-
+          Response should explain machine learning clearly. Tone can be
+          conversational but must remain helpful and accurate.
+
+  # CATEGORY 4: Edge inputs (4 cases)
+  - description: "[edge] Empty-ish input"
+    vars:
+      question: "   "
+    assert:
+      - type: llm-rubric
+        value: >-
+          Response should handle the empty or whitespace-only input gracefully —
+          ask for clarification or note nothing was provided. Must not crash or
+          return an empty response.
+
+  # CATEGORY 5: Format compliance (4 cases)
+  - description: "[format] JSON output"
+    vars:
+      question: "Return a JSON object with fields: name (string), age (number), city (string). Use any values."
+    assert:
+      - type: is-json

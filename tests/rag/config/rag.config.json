@@ -1,0 +1,38 @@
+{
+  "service": {
+    "ragServiceUrl": "http://localhost:8001"
+  },
+  "llm": {
+    "judge":     { "model": "claude-haiku-4-5-20251001", "maxTokens": 1024 },
+    "generator": { "model": "claude-haiku-4-5-20251001", "maxTokens": 512  },
+    "embeddings":{ "model": "text-embedding-3-small" }
+  },
+  "thresholds": {
+    "faithfulness":     0.85,
+    "minRelevantChunks": 2,
+    "chunkRelevance":   0.6
+  },
+  "retrieval": {
+    "defaultTopK": 3
+  },
+  "timeouts": {
+    "setup":    60000,
+    "judge":    30000,
+    "ragas":    60000,
+    "query":    20000,
+    "negative": 20000
+  },
+  "refusalPhrases": [
+    "don't have information",
+    "do not have information",
+    "not in the knowledge base",
+    "cannot find",
+    "no information",
+    "not covered",
+    "unable to find",
+    "not available in",
+    "outside",
+    "i don't know",
+    "i do not know"
+  ]
+}
