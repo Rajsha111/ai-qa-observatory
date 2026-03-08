@@ -4,6 +4,7 @@ import fs from 'fs';
 import { spawn } from 'child_process';
 import Anthropic from '@anthropic-ai/sdk';
 import dotenv from 'dotenv';
+import { runAgent } from '../agent/runner';
 import type {  ChatRequest,
     RAGQueryRequest, RAGQueryResponse,
     AgentRunRequest, AgentRunResponse,
@@ -225,38 +226,24 @@ app.post('/rag/run-tests', (req, res) => {
 
 // post agent run
 app.post('/agent-run', async (req, res) => {
-    const start = Date.now();
     const { goal } = req.body as AgentRunRequest;
-    const steps: AgentStep[] = [
-        {
-            stepIndex: 0,
-            thought: `Decomposing goal: "${goal}"`,
-            toolCalled: 'search',
-            toolInput: JSON.stringify({ query: goal }),
-            toolOutput: JSON.stringify({ results: ['stub result A', 'stub result B'] }),
-            observation: 'Found 2 relevant results',
-        },
-        {
-            stepIndex: 1,
-            thought: 'Synthesizing final answer from search results',
-        },
-    ];
     try {
-        const result: AgentRunResponse = {
-            run: {
-                runId: `run-${Date.now()}`,
-                goal,
-                steps,
-                finalAnswer: `Stub agent completed: "${goal}"`,
-                totalLatencyMs: Date.now() - start,
-                success: true,
-            },
-        };
-        res.json(result);
+      const run = await runAgent(goal);
+      const result: AgentRunResponse = { run };
+      res.json(result);
     } catch (error) {
-        console.error('Error in /agent-run:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+      console.error('Error in /agent-run:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
+  });
+
+// ── Health check — zero-cost endpoint for k6 load tests ─────────────────────
+app.get('/health', (_req, res) => {
+    res.json({
+        status: 'ok',
+        uptimeSeconds: Math.floor(process.uptime()),
+        timestamp: new Date().toISOString(),
+    });
 });
 
 app.listen(process.env.PORT || 3000, () => {

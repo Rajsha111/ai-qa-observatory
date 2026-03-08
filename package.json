@@ -1,6 +1,7 @@
 {
   "name": "ai-qa-observatory",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "dev": "ts-node -r tsconfig-paths/register src/target-app/server.ts",
@@ -18,7 +19,12 @@
     "test:rag:negative": "vitest run tests/rag/negative.test.ts --reporter=verbose",
     "test:rag:retrieval": "vitest run tests/rag/retrieval-unit.test.ts --reporter=verbose",
     "test:rag:stale": "vitest run tests/rag/stale-data.test.ts --reporter=verbose",
-    "test:rag:report": "ts-node -r tsconfig-paths/register tests/rag/report.ts"
+    "test:rag:report": "ts-node -r tsconfig-paths/register tests/rag/report.ts",
+    "test:mcp": "vitest run tests/mcp/ --reporter=verbose",
+    "test:mcp:report": "vitest run tests/mcp/ --reporter=json --outputFile=mcp-test-results.json; ts-node -r tsconfig-paths/register tests/mcp/report.ts",
+    "test:load": "k6 run tests/load/api-load.ts",
+    "test:load:ci": "k6 run --out json=load-results.json tests/load/api-load.ts",
+    "test:agent": "vitest run tests/agent/ --reporter=verbose"
   },
   "keywords": [],
   "author": "",
@@ -27,16 +33,19 @@
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@types/express": "^5.0.6",
+    "@types/k6": "^1.6.0",
     "@types/node": "^25.3.2",
+    "@vitest/coverage-v8": "^4.0.18",
+    "promptfoo": "^0.103.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.18",
-    "promptfoo": "^0.103.0"
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
     "@huggingface/inference": "^4.13.14",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "openai": "^6.25.0"

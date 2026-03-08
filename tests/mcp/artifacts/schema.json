@@ -1,0 +1,27 @@
+{
+  "schema": {
+    "type": "object",
+    "properties": {
+      "llm_response": {
+        "type": "string",
+        "description": "The response from the LLM to analyze."
+      },
+      "groundTruth": {
+        "type": "string",
+        "description": "The ground truth answer to compare against."
+      },
+      "criteria": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "The criteria to use for analysis."
+      }
+    },
+    "required": [
+      "llm_response",
+      "groundTruth",
+      "criteria"
+    ]
+  }
+}

@@ -81,6 +81,8 @@ from llama_index.llms.anthropic import Anthropic as AnthropicLLM
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from ragas.dataset_schema import SingleTurnSample
 from ragas.metrics import Faithfulness
+from ragas.llms import LangchainLLMWrapper
+from langchain_openai import ChatOpenAI
 
 # Load .env from project root (three levels up from tests/rag/service/)
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "../../../.env"))
@@ -356,7 +358,10 @@ def evaluate():
         retrieved_contexts=body["contexts"],
     )
 
-    faithfulness_metric = Faithfulness()
+    ragas_llm = LangchainLLMWrapper(
+        ChatOpenAI(model="gpt-4o-mini", api_key=os.environ["OPENAI_API_KEY"])
+    )
+    faithfulness_metric = Faithfulness(llm=ragas_llm)
 
     # Ragas metrics are async — run in a fresh event loop
     loop = asyncio.new_event_loop()

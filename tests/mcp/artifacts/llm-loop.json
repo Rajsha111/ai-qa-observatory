@@ -1,0 +1,56 @@
+[
+  {
+    "label": "Known-good response",
+    "userMessage": "Use the analyze_response_quality tool to evaluate this response.\n  Response: \"Photosynthesis is the process by which plants use sunlight, water, and CO2 to produce glucose and oxygen.\"\n  Ground truth: \"Photosynthesis converts light energy into chemical energy stored as glucose, using water and CO2, releasing oxygen as a byproduct.\"\n  Criteria: accuracy, relevance",
+    "toolUseInput": {
+      "llm_response": "Photosynthesis is the process by which plants use sunlight, water, and CO2 to produce glucose and oxygen.",
+      "groundTruth": "Photosynthesis converts light energy into chemical energy stored as glucose, using water and CO2, releasing oxygen as a byproduct.",
+      "criteria": [
+        "accuracy",
+        "relevance"
+      ]
+    },
+    "toolResult": {
+      "overall": 0.95,
+      "breakdown": [
+        {
+          "criterion": "accuracy",
+          "score": 1,
+          "reason": "The LLM response correctly identifies all key components of photosynthesis: sunlight, water, CO2 as inputs, and glucose and oxygen as outputs."
+        },
+        {
+          "criterion": "relevance",
+          "score": 0.9,
+          "reason": "The response is highly relevant but omits the mechanistic detail that light energy is converted into chemical energy, which is the fundamental purpose of photosynthesis."
+        }
+      ]
+    }
+  },
+  {
+    "label": "Known-bad response",
+    "userMessage": "Use the analyze_response_quality tool to evaluate this response.\n  Response: \"Photosynthesis is when plants absorb soil nutrients to grow.\"\n  Ground truth: \"Photosynthesis converts light energy into chemical energy stored as glucose, using water and CO2, releasing oxygen as a byproduct.\"\n  Criteria: accuracy, relevance",
+    "toolUseInput": {
+      "llm_response": "Photosynthesis is when plants absorb soil nutrients to grow.",
+      "groundTruth": "Photosynthesis converts light energy into chemical energy stored as glucose, using water and CO2, releasing oxygen as a byproduct.",
+      "criteria": [
+        "accuracy",
+        "relevance"
+      ]
+    },
+    "toolResult": {
+      "overall": 0.05,
+      "breakdown": [
+        {
+          "criterion": "accuracy",
+          "score": 0,
+          "reason": "The response is factually incorrect; photosynthesis does not involve absorbing soil nutrients to grow, but rather converts light energy into chemical energy using water and CO2."
+        },
+        {
+          "criterion": "relevance",
+          "score": 0.1,
+          "reason": "While the response attempts to define photosynthesis, it addresses the wrong process entirely and misses all key relevant components like light energy conversion, glucose production, and oxygen release."
+        }
+      ]
+    }
+  }
+]

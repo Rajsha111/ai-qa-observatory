@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG Test Report — 2026-03-03 11:07:15 UTC</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px; line-height: 1.5;
+      background: #f1f5f9; color: #1e293b;
+    }
+    a { color: #6366f1; }
+    code {
+      font-family: "SF Mono", Menlo, monospace; font-size: 12px;
+      background: #e2e8f0; padding: 1px 5px; border-radius: 3px;
+    }
+
+    /* ── Layout ── */
+    header { background: #1e293b; color: #f8fafc; padding: 28px 40px; }
+    header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .meta { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
+    main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+    section { margin-bottom: 40px; }
+
+    /* ── Overall summary ── */
+    .overall-summary {
+      display: flex; align-items: center; gap: 24px; margin-bottom: 28px;
+    }
+    .overall-stat { text-align: center; }
+    .overall-stat .big-num { font-size: 36px; font-weight: 800; line-height: 1; }
+    .overall-stat .big-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; }
+    .overall-stat.pass-num .big-num { color: #22c55e; }
+    .overall-stat.fail-num .big-num { color: #ef4444; }
+    .divider { width: 1px; height: 48px; background: #334155; }
+    .pass-rate-circle {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: conic-gradient(#22c55e calc(83% * 3.6deg), #334155 0);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700;
+    }
+
+    /* ── Section summary cards ── */
+    .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+    .summary-card {
+      background: #1e293b; border: 1px solid #334155;
+      border-radius: 8px; padding: 12px 18px; min-width: 140px;
+    }
+    .summary-count { font-size: 22px; font-weight: 700; }
+    .summary-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+
+    /* ── Section ── */
+    .section-header {
+      display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px;
+    }
+    .section-header h2 { font-size: 17px; font-weight: 700; }
+    .section-stats {
+      font-size: 12px; font-weight: 600; background: #e2e8f0;
+      padding: 2px 8px; border-radius: 10px; color: #475569;
+    }
+    .section-desc { font-size: 13px; color: #64748b; margin-bottom: 16px; }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff; border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      margin-bottom: 12px; overflow: hidden;
+      border-left: 4px solid #e2e8f0;
+    }
+    .pass-card { border-left-color: #22c55e; }
+    .fail-card { border-left-color: #ef4444; }
+
+    .card-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .test-index { font-size: 11px; color: #94a3b8; font-weight: 600; }
+    .test-desc  { font-weight: 600; font-size: 13px; flex: 1; color: #1e293b; }
+
+    .card-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      letter-spacing: .06em; padding: 2px 7px; border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .badge.pass { background: #dcfce7; color: #15803d; }
+    .badge.fail { background: #fee2e2; color: #b91c1c; }
+
+    /* ── Fields ── */
+    .field-row { display: flex; gap: 10px; align-items: flex-start; }
+    .field-row label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: #64748b;
+      min-width: 80px; padding-top: 2px;
+    }
+    .field-value { flex: 1; }
+    .query-text  { font-weight: 600; color: #1e293b; }
+    .answer-text { color: #334155; font-size: 13px; }
+
+    /* ── Score bar ── */
+    .score-bar-wrap {
+      display: flex; align-items: center; gap: 8px; margin-top: 4px;
+    }
+    .score-bar {
+      height: 8px; border-radius: 4px; min-width: 2px; max-width: 200px;
+      transition: width .3s;
+    }
+    .score-label { font-size: 13px; font-weight: 700; color: #1e293b; }
+    .threshold-label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+    .scores-row { display: flex; gap: 32px; flex-wrap: wrap; }
+    .score-item { display: flex; flex-direction: column; gap: 2px; }
+    .score-item label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #64748b; }
+
+    /* ── Tables ── */
+    .claims-table, .chunk-table, .full-table {
+      width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px;
+    }
+    .claims-table th, .chunk-table th, .full-table th {
+      background: #f1f5f9; text-align: left; padding: 7px 10px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .05em; color: #64748b; border-bottom: 1px solid #e2e8f0;
+    }
+    .claims-table td, .chunk-table td, .full-table td {
+      padding: 7px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top;
+    }
+    .claim-ok td  { background: #f0fdf4; }
+    .claim-bad td { background: #fef2f2; }
+    .chunk-ok td  { background: #f0fdf4; }
+    .chunk-bad td { background: #fef2f2; }
+    .row-pass td  { background: #f0fdf4; }
+    .row-fail td  { background: #fef2f2; }
+    .claim-icon   { font-weight: 700; text-align: center; white-space: nowrap; }
+    .reason-text  { color: #475569; font-size: 12px; }
+
+    .source-ok  { color: #15803d; }
+    .source-bad { color: #b91c1c; }
+
+    /* ── Chunks ── */
+    .chunk-block {
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 6px; padding: 10px 12px; margin-top: 8px;
+    }
+    .chunk-meta    { font-size: 11px; color: #64748b; margin-bottom: 6px; }
+    .chunk-content { font-size: 12px; color: #334155; white-space: pre-wrap; }
+
+    /* ── Details / Summary ── */
+    details { margin-top: 10px; }
+    details summary {
+      cursor: pointer; font-size: 12px; font-weight: 600;
+      color: #6366f1; user-select: none;
+      padding: 4px 0;
+    }
+    details summary:hover { color: #4f46e5; }
+
+    /* ── Stale section ── */
+    .stale-phase { margin-bottom: 8px; }
+
+    /* ── Error ── */
+    .error-box {
+      background: #fef2f2; border: 1px solid #fecaca;
+      border-radius: 6px; padding: 10px 14px;
+      color: #b91c1c; font-size: 12px; margin: 8px 0;
+    }
+    .ragas-error {
+      background: #fff7ed; border: 1px solid #fed7aa;
+      border-radius: 5px; padding: 5px 10px;
+      color: #c2410c; font-size: 11px; margin-top: 4px;
+    }
+
+    /* ── Category badge ── */
+    .category-badge {
+      display: inline-block; background: #ede9fe; color: #6d28d9;
+      font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 4px;
+    }
+
+    /* ── Precision summary ── */
+    .precision-summary {
+      background: #f1f5f9; border-radius: 6px; padding: 8px 12px;
+      font-size: 13px; color: #334155;
+    }
+
+    /* ── Full table wrapper ── */
+    .full-table { border-radius: 8px; overflow: hidden; }
+    .full-table td.query-text  { max-width: 220px; }
+    .full-table td.answer-text { max-width: 300px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>RAG Test Report</h1>
+    <div class="meta">Generated: 2026-03-03 11:07:15 UTC &nbsp;·&nbsp; Service: http://localhost:8001</div>
+    <div class="overall-summary">
+      <div class="overall-stat pass-num">
+        <div class="big-num">15</div>
+        <div class="big-label">Passed</div>
+      </div>
+      <div class="divider"></div>
+      <div class="overall-stat fail-num">
+        <div class="big-num">3</div>
+        <div class="big-label">Failed</div>
+      </div>
+      <div class="divider"></div>
+      <div class="pass-rate-circle">83%</div>
+    </div>
+    <div class="summary-grid">
+      
+      <div class="summary-card" style="border-top: 3px solid #22c55e">
+        <div class="summary-count" style="color:#22c55e">3/3</div>
+        <div class="summary-label">Faithfulness</div>
+      </div>
+      
+      <div class="summary-card" style="border-top: 3px solid #ef4444">
+        <div class="summary-count" style="color:#ef4444">0/3</div>
+        <div class="summary-label">Precision</div>
+      </div>
+      
+      <div class="summary-card" style="border-top: 3px solid #22c55e">
+        <div class="summary-count" style="color:#22c55e">5/5</div>
+        <div class="summary-label">Negative</div>
+      </div>
+      
+      <div class="summary-card" style="border-top: 3px solid #22c55e">
+        <div class="summary-count" style="color:#22c55e">4/4</div>
+        <div class="summary-label">Retrieval</div>
+      </div>
+      
+      <div class="summary-card" style="border-top: 3px solid #22c55e">
+        <div class="summary-count" style="color:#22c55e">1/1</div>
+        <div class="summary-label">Stale Data</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+    <section>
+      <div class="section-header">
+        <h2>Faithfulness Tests</h2>
+        <span class="section-stats">3/3 passed</span>
+      </div>
+      <p class="section-desc">Tests whether the LLM answer is grounded in retrieved chunks (no training-data leakage). Scored by LLM-as-Judge and Ragas.</p>
+      
+    <div class="card pass-card">
+      <div class="card-header">
+        <span class="badge pass">PASS</span>
+        <span class="test-index">#1</span>
+        <span class="test-desc">Specific numeric fact — must be exactly 27, not the 14 days notice period or 10 public holidays.</span>
+      </div>
+      
+      <div class="card-body">
+        <div class="field-row">
+          <label>Query</label>
+          <div class="field-value query-text">How many days of paid vacation are full-time employees entitled to per year?</div>
+        </div>
+        <div class="field-row">
+          <label>Answer</label>
+          <div class="field-value answer-text">According to the Solaris Tech Annual Leave Policy, full-time employees are entitled to **27 days of paid vacation per calendar year**. This is separate from the 10 public holidays observed by the company.</div>
+        </div>
+        <div class="scores-row">
+          <div class="score-item">
+            <label>LLM Judge Score</label>
+            
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:100%; background:#22c55e;"></div>
+      <span class="score-label">1.00</span>
+    </div>
+            <span class="threshold-label">threshold: 0.85</span>
+          </div>
+          
+        </div>
+        
+        <details>
+          <summary>Claims breakdown (2/2 supported)</summary>
+          <table class="claims-table">
+            <thead><tr><th>Supported</th><th>Claim</th></tr></thead>
+            <tbody>
+              
+              <tr class="claim-ok">
+                <td class="claim-icon">✓</td>
+                <td>full-time employees are entitled to 27 days of paid vacation per calendar year</td>
+              </tr>
+              <tr class="claim-ok">
+                <td class="claim-icon">✓</td>
+                <td>This is separate from the 10 public holidays observed by the company</td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
+        <details>
+          <summary>Retrieved chunks (3)</summary>
+          
+          <div class="chunk-block">
+            <div class="chunk-meta">Chunk 1 · Source: <code>doc-001-vacation</code></div>
+            <div class="chunk-content">SOLARIS TECH — Annual Leave Policy. All full-time employees are entitled to exactly 27 days of paid vacation per calendar year. This is separate from the 10 public holidays observed by the company. Vacation requests must be submitted through the 'Portal-X' system at least 14 days in advance. Unused days do not carry over to the next year.</div>
+          </div>
+          <div class="chunk-block">
+            <div class="chunk-meta">Chunk 2 · Source: <code>doc-002-remote-work</code></div>
+            <div class="chunk-content">SOLARIS TECH — Work from Anywhere Guidelines. Employees are required to be in the physical office on Tuesdays and Thursdays for 'Core Collaboration Days.' On Mondays, Wednesdays, and Fridays, employees have the option to work remotely. A monthly home-office stipend of $75 is provided to cover internet and electricity costs.</div>
+          </div>
+          <div class="chunk-block">
+            <div class="chunk-meta">Chunk 3 · Source: <code>doc-005-reimbursement</code></div>
+            <div class="chunk-content">SOLARIS TECH — Travel Expenses. The company reimburses meals during business travel up to a maximum of $60 per day. Receipts are mandatory for any single expense exceeding $15. Economy class is the standard for all flights under 6 hours. For flights longer than 6 hours, Premium Economy is permitted.</div>
+          </div>
+        </details>
+      </div>
+    </div>
+    <div class="card pass-card">
+      <div class="card-header">
+        <span class="badge pass">PASS</span>
+        <span class="test-index">#2</span>
+        <span class="test-desc">Conditional logic — must correctly identify Tuesday and Thursday as the core days.</span>
+      </div>
+      
+      <div class="card-body">
+        <div class="field-row">
+          <label>Query</label>
+          <div class="field-value query-text">What are the required in-office days at Solaris Tech?</div>
+        </div>
+        <div class="field-row">
+          <label>Answer</label>
+          <div class="field-value answer-text">According to the Work from Anywhere Guidelines, the required in-office days at Solaris Tech are **Tuesdays and Thursdays**, which are designated as 'Core Collaboration Days.'</div>
+        </div>
+        <div class="scores-row">
+          <div class="score-item">
+            <label>LLM Judge Score</label>
+            
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:100%; background:#22c55e;"></div>
+      <span class="score-label">1.00</span>
+    </div>
+            <span class="threshold-label">threshold: 0.85</span>
+          </div>
+          
+        </div>
+        
+        <details>
+          <summary>Claims breakdown (2/2 supported)</summary>
+          <table class="claims-table">
+            <thead><tr><th>Supported</th><th>Claim</th></tr></thead>
+            <tbody>
+              
+              <tr class="claim-ok">
+                <td class="claim-icon">✓</td>
+                <td>The required in-office days at Solaris Tech are Tuesdays and Thursdays</td>
+              </tr>
+              <tr class="claim-ok">
+                <td class="claim-icon">✓</td>
+                <td>These days are designated as 'Core Collaboration Days'</td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
+        <details>
+          <summary>Retrieved chunks (3)</summary>
+          
+          <div class="chunk-block">
+            <div class="chunk-meta">Chunk 1 · Source: <code>doc-002-remote-work</code></div>
+            <div class="chunk-content">SOLARIS TECH — Work from Anywhere Guidelines. Employees are required to be in the physical office on Tuesdays and Thursdays for 'Core Collaboration Days.' On Mondays, Wednesdays, and Fridays, employees have the option to work remotely. A monthly home-office stipend of $75 is provided to cover internet and electricity costs.</div>
+          </div>
+          <div class="chunk-block">
+            <div class="chunk-meta">Chunk 2 · Source: <code>doc-001-vacation</code></div>
+            <div class="chunk-content">SOLARIS TECH — Annual Leave Policy. All full-time employees are entitled to exactly 27 days of paid vacation per calendar year. This is separate from the 10 public holidays observed by the company. Vacation requests must be submitted through the 'Portal-X' system at least 14 days in advance. Unused days do not carry over to the next year.</div>
+          </div>
+          <div class="chunk-block">
+            <div class="chunk-meta">Chunk 3 · Source: <code>doc-003-security</code></div>
+            <div class="chunk-content">SOLARIS TECH — Cybersecurity Protocol. Corporate passwords must be a minimum of 16 characters long and include at least one special character (!, @, #, or $). Passwords must be changed every 90 days. Sharing passwords via Slack or Email is a Tier-1 security violation and results in an immediate account freeze.</div>
+          </div>
+        </details>
+      </div>
+    </div>
+    <div class="card pass-card">
+      <div class="card-header">
+        <span class="badge pass">PASS</span>
+        <span class="test-index">#3</span>
+        <span class="test-desc">Technical constraints — should identify 16 characters and the list of 4 approved special characters. (+ Ragas)</span>
+      </div>
+      
+      <div class="card-body">
+        <div class="field-row">
+          <label>Query</label>
+          <div class="field-value query-text">What is the minimum character length and special character requirement for passwords?</div>
+        </div>
+        <div class="field-row">
+          <label>Answer</label>
+          <div class="field-value answer-text">Based on the Solaris Tech Cybersecurity Protocol:
+
+**Minimum character length:** 16 characters
+
+**Special character requirement:** At least one special character from the following set: !, @, #, or $</div>
+        </div>
+        <div class="scores-row">
+          <div class="score-item">
+            <label>LLM Judge Score</label>
+            
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:100%; background:#22c55e;"></div>
+      <span class="score-label">1.00</span>
+    </div>
+            <span class="threshold-label">threshold: 0.85</span>
+          </div>
+          
+          <div class="score-item">
+            <label>Ragas Score</label>
+            
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:100%; background:#22c55e;"></div>
+      <span class="score-label">1.00</span>
+    </div>
+            <span class="threshold-label">threshold: 0.85</span>
+          </div>
+        </div>
+        
+        <details>
+          <summary>Claims breakdown (3/3 supported)</summary>
+          <table class="claims-table">
+            <thead><tr><th>Supported</th><th>Claim</th></tr></thead>
+            <tbody>
+              
+              <tr class="claim-ok">
+                <td class="claim-icon">✓</td>
+                <td>Minimum character length is 16 characters</td>
+              </tr>
+              <tr class="claim-ok">
+                <td class="claim-icon">✓</td>
+                <td>At least one special character is required</td>
+              </tr>
+              <tr class="claim-ok">
+                <td class="claim-icon">✓</td>
+                <td>Special characters allowed are from the set: !, @, #, or $</td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
+        <details>
+          <summary>Retrieved chunks (3)</summary>
+          
+          <div class="chunk-block">
+            <div class="chunk-meta">Chunk 1 · Source: <code>doc-003-security</code></div>
+            <div class="chunk-content">SOLARIS TECH — Cybersecurity Protocol. Corporate passwords must be a minimum of 16 characters long and include at least one special character (!, @, #, or $). Passwords must be changed every 90 days. Sharing passwords via Slack or Email is a Tier-1 security violation and results in an immediate account freeze.</div>
+          </div>
+          <div class="chunk-block">
+            <div class="chunk-meta">Chunk 2 · Source: <code>doc-001-vacation</code></div>
+            <div class="chunk-content">SOLARIS TECH — Annual Leave Policy. All full-time employees are entitled to exactly 27 days of paid vacation per calendar year. This is separate from the 10 public holidays observed by the company. Vacation requests must be submitted through the 'Portal-X' system at least 14 days in advance. Unused days do not carry over to the next year.</div>
+          </div>
+          <div class="chunk-block">
+            <div class="chunk-meta">Chunk 3 · Source: <code>doc-004-data-quality</code></div>
+            <div class="chunk-content">NEXUS AI — Data Quality Requirements for AI Systems
+Document ID: DATA-001 | Version: 2.0 (UPDATED 2026-03-01 — Legal review)
+
+1. Data Freshness
+POLICY UPDATE: Documents ingested into the knowledge base must not be older than
+60 days for compliance-related queries (reduced from 90 days per Legal directive).
+Non-compliance documents may have a maximum age of 120 days.
+
+2. Source Quality
+All knowledge base documents must originate from approved internal sources.
+External sources require sign-off from the Legal team before ingestion.</div>
+          </div>
+        </details>
+      </div>
+    </div>
+    </section>
+    
+    <section>
+      <div class="section-header">
+        <h2>Context Precision Tests</h2>
+        <span class="section-stats">0/3 passed</span>
+      </div>
+      <p class="section-desc">Are the top-K retrieved chunks actually relevant to the query? Scored per-chunk by LLM judge.</p>
+      
+    <div class="card fail-card">
+      <div class="card-header">
+        <span class="badge fail">FAIL</span>
+        <span class="test-index">#1</span>
+        <span class="test-desc">Security policy — should specifically retrieve the IT Security doc (doc-003).</span>
+      </div>
+      
+      <div class="card-body">
+        <div class="field-row">
+          <label>Query</label>
+          <div class="field-value query-text">What is the penalty for sharing a password via Slack or Email?</div>
+        </div>
+        <div class="field-row">
+          <label>Answer</label>
+          <div class="field-value answer-text">According to the Cybersecurity Protocol documentation, sharing passwords via Slack or Email is a Tier-1 security violation and results in an **immediate account freeze**.</div>
+        </div>
+        <div class="precision-summary">
+          Context Precision: <strong>1/3</strong>
+          = <strong>0.33</strong>
+          &nbsp;·&nbsp; Required: ≥2/3 relevant
+        </div>
+        <details open>
+          <summary>Chunk relevance breakdown</summary>
+          <table class="chunk-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Source</th><th>Similarity</th>
+                <th>Relevance Score</th><th>Relevant?</th><th>Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr class="chunk-ok">
+                <td>1</td>
+                <td><code>doc-003-security</code></td>
+                <td>0.374</td>
+                <td>
+                  
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:100%; background:#22c55e;"></div>
+      <span class="score-label">1.00</span>
+    </div>
+                </td>
+                <td class="claim-icon">✓</td>
+                <td class="reason-text">Directly answers the query by explicitly stating that sharing passwords via Slack or Email is a Tier-1 security violation resulting in immediate account freeze.</td>
+              </tr>
+              <tr class="chunk-bad">
+                <td>2</td>
+                <td><code>doc-002-remote-work</code></td>
+                <td>0.209</td>
+                <td>
+                  
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:10%; background:#ef4444;"></div>
+      <span class="score-label">0.10</span>
+    </div>
+                </td>
+                <td class="claim-icon">✗</td>
+                <td class="reason-text">The chunk discusses work-from-anywhere guidelines and office attendance policies, which is completely unrelated to password sharing penalties.</td>
+              </tr>
+              <tr class="chunk-bad">
+                <td>3</td>
+                <td><code>doc-005-reimbursement</code></td>
+                <td>0.191</td>
+                <td>
+                  
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:10%; background:#ef4444;"></div>
+      <span class="score-label">0.10</span>
+    </div>
+                </td>
+                <td class="claim-icon">✗</td>
+                <td class="reason-text">The chunk discusses travel expense reimbursement policies and is completely unrelated to password security or sharing practices.</td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+    </div>
+    <div class="card fail-card">
+      <div class="card-header">
+        <span class="badge fail">FAIL</span>
+        <span class="test-index">#2</span>
+        <span class="test-desc">Travel policy — should retrieve the Finance doc (doc-005) despite being a 'travel' query.</span>
+      </div>
+      
+      <div class="card-body">
+        <div class="field-row">
+          <label>Query</label>
+          <div class="field-value query-text">What are the rules for booking flights that are longer than 6 hours?</div>
+        </div>
+        <div class="field-row">
+          <label>Answer</label>
+          <div class="field-value answer-text">According to the Travel Expenses policy, for flights longer than 6 hours, **Premium Economy is permitted**.</div>
+        </div>
+        <div class="precision-summary">
+          Context Precision: <strong>1/3</strong>
+          = <strong>0.33</strong>
+          &nbsp;·&nbsp; Required: ≥2/3 relevant
+        </div>
+        <details open>
+          <summary>Chunk relevance breakdown</summary>
+          <table class="chunk-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Source</th><th>Similarity</th>
+                <th>Relevance Score</th><th>Relevant?</th><th>Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr class="chunk-ok">
+                <td>1</td>
+                <td><code>doc-005-reimbursement</code></td>
+                <td>0.285</td>
+                <td>
+                  
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:70%; background:#22c55e;"></div>
+      <span class="score-label">0.70</span>
+    </div>
+                </td>
+                <td class="claim-icon">✓</td>
+                <td class="reason-text">The chunk directly addresses flight booking rules for flights longer than 6 hours (Premium Economy is permitted), but provides limited detail and mixes in unrelated travel expense policies.</td>
+              </tr>
+              <tr class="chunk-bad">
+                <td>2</td>
+                <td><code>doc-003-security</code></td>
+                <td>0.225</td>
+                <td>
+                  
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:10%; background:#ef4444;"></div>
+      <span class="score-label">0.10</span>
+    </div>
+                </td>
+                <td class="claim-icon">✗</td>
+                <td class="reason-text">The chunk discusses cybersecurity password protocols and is completely unrelated to flight booking rules.</td>
+              </tr>
+              <tr class="chunk-bad">
+                <td>3</td>
+                <td><code>doc-001-vacation</code></td>
+                <td>0.213</td>
+                <td>
+                  
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:10%; background:#ef4444;"></div>
+      <span class="score-label">0.10</span>
+    </div>
+                </td>
+                <td class="claim-icon">✗</td>
+                <td class="reason-text">The chunk discusses company vacation policy and has no relevance to flight booking rules or duration-based flight regulations.</td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+    </div>
+    <div class="card fail-card">
+      <div class="card-header">
+        <span class="badge fail">FAIL</span>
+        <span class="test-index">#3</span>
+        <span class="test-desc">Financial benefit — should retrieve the Remote Work doc (doc-002).</span>
+      </div>
+      
+      <div class="card-body">
+        <div class="field-row">
+          <label>Query</label>
+          <div class="field-value query-text">What is the monthly stipend amount provided for remote work expenses?</div>
+        </div>
+        <div class="field-row">
+          <label>Answer</label>
+          <div class="field-value answer-text">Based on the provided documentation, the monthly home-office stipend is **$75**. This stipend is intended to cover internet and electricity costs for employees working remotely.</div>
+        </div>
+        <div class="precision-summary">
+          Context Precision: <strong>1/3</strong>
+          = <strong>0.33</strong>
+          &nbsp;·&nbsp; Required: ≥2/3 relevant
+        </div>
+        <details open>
+          <summary>Chunk relevance breakdown</summary>
+          <table class="chunk-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Source</th><th>Similarity</th>
+                <th>Relevance Score</th><th>Relevant?</th><th>Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr class="chunk-ok">
+                <td>1</td>
+                <td><code>doc-002-remote-work</code></td>
+                <td>0.386</td>
+                <td>
+                  
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:100%; background:#22c55e;"></div>
+      <span class="score-label">1.00</span>
+    </div>
+                </td>
+                <td class="claim-icon">✓</td>
+                <td class="reason-text">The chunk directly answers the query by explicitly stating that a monthly home-office stipend of $75 is provided for remote work expenses.</td>
+              </tr>
+              <tr class="chunk-bad">
+                <td>2</td>
+                <td><code>doc-005-reimbursement</code></td>
+                <td>0.323</td>
+                <td>
+                  
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:10%; background:#ef4444;"></div>
+      <span class="score-label">0.10</span>
+    </div>
+                </td>
+                <td class="claim-icon">✗</td>
+                <td class="reason-text">The chunk discusses travel expense reimbursement policies and has no information about monthly stipends for remote work expenses.</td>
+              </tr>
+              <tr class="chunk-bad">
+                <td>3</td>
+                <td><code>doc-001-vacation</code></td>
+                <td>0.245</td>
+                <td>
+                  
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:10%; background:#ef4444;"></div>
+      <span class="score-label">0.10</span>
+    </div>
+                </td>
+                <td class="claim-icon">✗</td>
+                <td class="reason-text">The chunk discusses annual leave policy and vacation days, which is completely unrelated to remote work expense stipends.</td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+    </div>
+    </section>
+    
+    <section>
+      <div class="section-header">
+        <h2>Negative Tests — Hallucination Detection</h2>
+        <span class="section-stats">5/5 passed</span>
+      </div>
+      <p class="section-desc">Questions outside the knowledge base. The system must refuse to answer — a confident answer is a hallucination.</p>
+      <table class="full-table">
+        <thead>
+          <tr><th>#</th><th>Category</th><th>Query</th><th>Answer</th><th>Refused?</th><th>Result</th></tr>
+        </thead>
+        <tbody>
+    <tr class="row-pass">
+      <td>1</td>
+      <td><span class="category-badge">Corporate Leadership / HR</span></td>
+      <td class="query-text">Who is the current CEO of Solaris Tech?</td>
+      <td class="answer-text">I don't have information about that in the knowledge base.
+
+The provided documentation contains corporate policies for Solaris Tech (Annual Leave, Cybersecurity Protocol) and information about Project Solaris, but does not include details about the current CEO.</td>
+      <td class="claim-icon">✓ refused</td>
+      <td><span class="badge pass">PASS</span></td>
+    </tr>
+    
+    <tr class="row-pass">
+      <td>2</td>
+      <td><span class="category-badge">Benefits / Health</span></td>
+      <td class="query-text">Does the company offer dental and vision insurance?</td>
+      <td class="answer-text">I don't have information about that in the knowledge base.
+
+The provided documentation covers annual leave policy, travel expenses, and work-from-anywhere guidelines, but does not include information about dental and vision insurance offerings.</td>
+      <td class="claim-icon">✓ refused</td>
+      <td><span class="badge pass">PASS</span></td>
+    </tr>
+    
+    <tr class="row-pass">
+      <td>3</td>
+      <td><span class="category-badge">IT / Operations</span></td>
+      <td class="query-text">What is the process for submitting a hardware upgrade request?</td>
+      <td class="answer-text">I don't have information about that in the knowledge base.
+
+The provided documents cover data quality requirements for AI systems, cybersecurity password protocols, and details about Project Solaris (a deep-sea exploration mission), but they do not contain any information about the process for submitting a hardware upgrade request.</td>
+      <td class="claim-icon">✓ refused</td>
+      <td><span class="badge pass">PASS</span></td>
+    </tr>
+    
+    <tr class="row-pass">
+      <td>4</td>
+      <td><span class="category-badge">Finance / Compensation</span></td>
+      <td class="query-text">What is the annual bonus percentage for Senior Engineers?</td>
+      <td class="answer-text">I don't have information about that in the knowledge base.
+
+The provided documentation covers annual leave policy, travel expenses, and information about Project Solaris (an external research initiative), but does not contain any information about bonus percentages for Senior Engineers or any other employee roles.</td>
+      <td class="claim-icon">✓ refused</td>
+      <td><span class="badge pass">PASS</span></td>
+    </tr>
+    
+    <tr class="row-pass">
+      <td>5</td>
+      <td><span class="category-badge">Office Management</span></td>
+      <td class="query-text">How do I book a meeting room in the physical office?</td>
+      <td class="answer-text">I don't have information about that in the knowledge base.
+
+The provided documentation covers work-from-anywhere guidelines, annual leave policy, and travel expenses, but does not include information about meeting room booking procedures or systems.</td>
+      <td class="claim-icon">✓ refused</td>
+      <td><span class="badge pass">PASS</span></td>
+    </tr>
+    </tbody>
+      </table>
+    </section>
+    
+    <section>
+      <div class="section-header">
+        <h2>Retrieval Unit Tests</h2>
+        <span class="section-stats">4/4 passed</span>
+      </div>
+      <p class="section-desc">Known query → expected document ID mappings. Deterministic regression suite — catches embedding model or chunking changes.</p>
+      
+    <div class="card pass-card">
+      <div class="card-header">
+        <span class="badge pass">PASS</span>
+        <span class="test-index">#1</span>
+        <span class="test-desc">Portal-X system lookup</span>
+      </div>
+      
+      <div class="card-body">
+        <div class="field-row">
+          <label>Query</label>
+          <div class="field-value query-text">Which software system is used to submit vacation requests?</div>
+        </div>
+        <div class="field-row">
+          <label>Expected source</label>
+          <div class="field-value"><code class="source-ok">doc-001-vacation</code></div>
+        </div>
+        <table class="chunk-table">
+          <thead><tr><th>Rank</th><th>Retrieved Source</th><th>Similarity Score</th><th>Matches?</th></tr></thead>
+          <tbody>
+            
+              <tr class="chunk-ok">
+                <td>1</td>
+                <td><code>doc-001-vacation</code></td>
+                <td>0.359</td>
+                <td class="claim-icon">✓</td>
+              </tr>
+              <tr class="">
+                <td>2</td>
+                <td><code>doc-005-reimbursement</code></td>
+                <td>0.267</td>
+                <td class="claim-icon">—</td>
+              </tr>
+              <tr class="">
+                <td>3</td>
+                <td><code>doc-002-remote-work</code></td>
+                <td>0.251</td>
+                <td class="claim-icon">—</td>
+              </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card pass-card">
+      <div class="card-header">
+        <span class="badge pass">PASS</span>
+        <span class="test-index">#2</span>
+        <span class="test-desc">Distractor handling — should link the mission budget to the external project, not corporate finance.</span>
+      </div>
+      
+      <div class="card-body">
+        <div class="field-row">
+          <label>Query</label>
+          <div class="field-value query-text">How much is the budget for the deep-sea exploration mission?</div>
+        </div>
+        <div class="field-row">
+          <label>Expected source</label>
+          <div class="field-value"><code class="source-ok">doc-004-project-solaris</code></div>
+        </div>
+        <table class="chunk-table">
+          <thead><tr><th>Rank</th><th>Retrieved Source</th><th>Similarity Score</th><th>Matches?</th></tr></thead>
+          <tbody>
+            
+              <tr class="chunk-ok">
+                <td>1</td>
+                <td><code>doc-004-project-solaris</code></td>
+                <td>0.321</td>
+                <td class="claim-icon">✓</td>
+              </tr>
+              <tr class="">
+                <td>2</td>
+                <td><code>doc-005-reimbursement</code></td>
+                <td>0.234</td>
+                <td class="claim-icon">—</td>
+              </tr>
+              <tr class="">
+                <td>3</td>
+                <td><code>doc-001-vacation</code></td>
+                <td>0.190</td>
+                <td class="claim-icon">—</td>
+              </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card pass-card">
+      <div class="card-header">
+        <span class="badge pass">PASS</span>
+        <span class="test-index">#3</span>
+        <span class="test-desc">Finance policy lookup</span>
+      </div>
+      
+      <div class="card-body">
+        <div class="field-row">
+          <label>Query</label>
+          <div class="field-value query-text">What is the maximum daily reimbursement for meals during business travel?</div>
+        </div>
+        <div class="field-row">
+          <label>Expected source</label>
+          <div class="field-value"><code class="source-ok">doc-005-reimbursement</code></div>
+        </div>
+        <table class="chunk-table">
+          <thead><tr><th>Rank</th><th>Retrieved Source</th><th>Similarity Score</th><th>Matches?</th></tr></thead>
+          <tbody>
+            
+              <tr class="chunk-ok">
+                <td>1</td>
+                <td><code>doc-005-reimbursement</code></td>
+                <td>0.486</td>
+                <td class="claim-icon">✓</td>
+              </tr>
+              <tr class="">
+                <td>2</td>
+                <td><code>doc-002-remote-work</code></td>
+                <td>0.213</td>
+                <td class="claim-icon">—</td>
+              </tr>
+              <tr class="">
+                <td>3</td>
+                <td><code>doc-001-vacation</code></td>
+                <td>0.208</td>
+                <td class="claim-icon">—</td>
+              </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card pass-card">
+      <div class="card-header">
+        <span class="badge pass">PASS</span>
+        <span class="test-index">#4</span>
+        <span class="test-desc">IT rotation cycle lookup</span>
+      </div>
+      
+      <div class="card-body">
+        <div class="field-row">
+          <label>Query</label>
+          <div class="field-value query-text">How often must employees change their corporate passwords?</div>
+        </div>
+        <div class="field-row">
+          <label>Expected source</label>
+          <div class="field-value"><code class="source-ok">doc-003-security</code></div>
+        </div>
+        <table class="chunk-table">
+          <thead><tr><th>Rank</th><th>Retrieved Source</th><th>Similarity Score</th><th>Matches?</th></tr></thead>
+          <tbody>
+            
+              <tr class="chunk-ok">
+                <td>1</td>
+                <td><code>doc-003-security</code></td>
+                <td>0.416</td>
+                <td class="claim-icon">✓</td>
+              </tr>
+              <tr class="">
+                <td>2</td>
+                <td><code>doc-002-remote-work</code></td>
+                <td>0.260</td>
+                <td class="claim-icon">—</td>
+              </tr>
+              <tr class="">
+                <td>3</td>
+                <td><code>doc-001-vacation</code></td>
+                <td>0.234</td>
+                <td class="claim-icon">—</td>
+              </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+    
+    <section>
+      <div class="section-header">
+        <h2>Stale Data Test — Update Propagation</h2>
+        <span class="section-stats">PASSED</span>
+      </div>
+      <p class="section-desc">Simulates a document update. After re-ingesting a changed document the system must reflect the new value and drop the old one.</p>
+      
+      <div class="field-row" style="margin-bottom:12px">
+        <label>Query</label>
+        <div class="field-value query-text">What is the maximum age of documents allowed for compliance-related queries?</div>
+      </div>
+      
+    <div class="stale-phase pass-card">
+      <div class="card-header">
+        <span class="badge pass">PASS</span>
+        <span class="test-desc">Phase 1 — ingest v1: expects <code>90</code> in answer</span>
+      </div>
+      <div class="card-body">
+        <div class="field-row">
+          <label>Answer</label>
+          <div class="field-value answer-text">Based on the provided documentation, the maximum age of documents allowed for compliance-related queries is **90 days**.
+
+This requirement is outlined in Section 1 (Data Freshness) of the NEXUS AI — Data Quality Requirements for AI Systems document.</div>
+        </div>
+      </div>
+    </div>
+      
+    <div class="stale-phase pass-card">
+      <div class="card-header">
+        <span class="badge pass">PASS</span>
+        <span class="test-desc">Phase 2 — re-ingest v2: expects <code>60</code> in answer</span>
+      </div>
+      <div class="card-body">
+        <div class="field-row">
+          <label>Answer</label>
+          <div class="field-value answer-text">According to the NEXUS AI Data Quality Requirements (Document ID: DATA-001, Version 2.0), the maximum age of documents allowed for compliance-related queries is **60 days**.</div>
+        </div>
+      </div>
+    </div>
+      <div class="card pass-card" style="margin-top:8px">
+        <div class="card-header">
+          <span class="badge pass">PASS</span>
+          <span class="test-desc">Old value (<code>90</code>) absent from v2 answer</span>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

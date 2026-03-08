@@ -11,3 +11,5 @@ build/
 *.egg-info/
 playwright-report/
 coverage/
+tests/rag/node_modules/
+test-results/

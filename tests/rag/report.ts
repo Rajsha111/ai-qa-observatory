@@ -48,16 +48,18 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 interface Claim { claim: string; supported: boolean; }
 
 interface FaithfulnessResult {
-  query:       string;
-  description: string;
-  answer:      string;
-  chunks:      Array<{ content: string; source: string }>;
-  llmScore:    number;
-  ragasScore:  number | null;
-  claims:      Claim[];
-  threshold:   number;
-  passed:      boolean;
-  error?:      string;
+  query:         string;
+  description:   string;
+  answer:        string;
+  chunks:        Array<{ content: string; source: string }>;
+  llmScore:      number;
+  ragasScore:    number | null;
+  includesRagas: boolean;   // true = Ragas was attempted; always render score bar
+  ragasError?:   string;    // set when Ragas call itself failed
+  claims:        Claim[];
+  threshold:     number;
+  passed:        boolean;
+  error?:        string;
 }
 
 interface ChunkScore {
@@ -193,14 +195,14 @@ async function runFaithfulness(): Promise<FaithfulnessResult[]> {
       results.push({
         query: q.query, description: q.description, answer: data.answer,
         chunks: data.retrievedChunks.map(c => ({ content: c.content, source: c.source ?? "" })),
-        llmScore: score, ragasScore: null, claims,
+        llmScore: score, ragasScore: null, includesRagas: false, claims,
         threshold: cfg.thresholds.faithfulness, passed,
       });
     } catch (e) {
       console.log("ERROR");
       results.push({
         query: q.query, description: q.description, answer: "", chunks: [],
-        llmScore: 0, ragasScore: null, claims: [],
+        llmScore: 0, ragasScore: null, includesRagas: false, claims: [],
         threshold: cfg.thresholds.faithfulness, passed: false, error: String(e),
       });
     }
@@ -216,30 +218,46 @@ async function runFaithfulness(): Promise<FaithfulnessResult[]> {
         data.answer,
         data.retrievedChunks.map(c => c.content)
       );
-      const evalRes = await fetch(`${RAG_SERVICE}/evaluate`, {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({
-          question: q.query,
-          answer:   data.answer,
-          contexts: data.retrievedChunks.map(c => c.content),
-        }),
-      });
-      const evalData = await evalRes.json() as { faithfulness: number };
-      const ragasScore = evalData.faithfulness;
-      const passed = llmScore >= cfg.thresholds.faithfulness && ragasScore >= cfg.thresholds.faithfulness;
-      console.log(passed ? "✓" : "✗");
+
+      // Run Ragas — capture score OR error independently so LLM score is always visible
+      let ragasScore: number | null = null;
+      let ragasError: string | undefined;
+      try {
+        const evalRes = await fetch(`${RAG_SERVICE}/evaluate`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({
+            question: q.query,
+            answer:   data.answer,
+            contexts: data.retrievedChunks.map(c => c.content),
+          }),
+        });
+        const evalData = await evalRes.json() as { faithfulness: number; error?: string };
+        if (evalData.error) {
+          ragasError = evalData.error;
+        } else {
+          ragasScore = evalData.faithfulness ?? null;
+        }
+      } catch (ragasErr) {
+        ragasError = String(ragasErr);
+      }
+
+      // Test passes only if BOTH scores meet the threshold
+      const ragasPassed = ragasScore !== null && ragasScore >= cfg.thresholds.faithfulness;
+      const passed = llmScore >= cfg.thresholds.faithfulness && ragasPassed;
+      console.log(passed ? "✓" : `✗ (LLM:${llmScore.toFixed(2)} Ragas:${ragasScore ?? "error"})`);
+
       results.push({
         query: q.query, description: `${q.description} (+ Ragas)`, answer: data.answer,
         chunks: data.retrievedChunks.map(c => ({ content: c.content, source: c.source ?? "" })),
-        llmScore, ragasScore, claims,
+        llmScore, ragasScore, includesRagas: true, ragasError, claims,
         threshold: cfg.thresholds.faithfulness, passed,
       });
     } catch (e) {
       console.log("ERROR");
       results.push({
         query: q.query, description: queries[2].description, answer: "", chunks: [],
-        llmScore: 0, ragasScore: null, claims: [],
+        llmScore: 0, ragasScore: null, includesRagas: true, claims: [],
         threshold: cfg.thresholds.faithfulness, passed: false, error: String(e),
       });
     }
@@ -432,11 +450,14 @@ function faithfulnessSection(results: FaithfulnessResult[]): string {
             ${scoreBar(r.llmScore, r.threshold)}
             <span class="threshold-label">threshold: ${r.threshold}</span>
           </div>
-          ${r.ragasScore != null ? `
+          ${r.includesRagas ? `
           <div class="score-item">
             <label>Ragas Score</label>
-            ${scoreBar(r.ragasScore, r.threshold)}
-            <span class="threshold-label">threshold: ${r.threshold}</span>
+            ${r.ragasError
+              ? `<div class="ragas-error">⚠ Ragas error: ${esc(r.ragasError)}</div>`
+              : scoreBar(r.ragasScore, r.threshold)
+            }
+            <span class="threshold-label">threshold: ${r.threshold}${r.ragasError ? " — Ragas call failed → test marked FAIL" : ""}</span>
           </div>` : ""}
         </div>
         ${r.claims.length > 0 ? `
@@ -849,6 +870,11 @@ function buildHTML(
       background: #fef2f2; border: 1px solid #fecaca;
       border-radius: 6px; padding: 10px 14px;
       color: #b91c1c; font-size: 12px; margin: 8px 0;
+    }
+    .ragas-error {
+      background: #fff7ed; border: 1px solid #fed7aa;
+      border-radius: 5px; padding: 5px 10px;
+      color: #c2410c; font-size: 11px; margin-top: 4px;
     }
 
     /* ── Category badge ── */

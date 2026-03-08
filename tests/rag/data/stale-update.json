@@ -8,7 +8,7 @@
   },
   "v2": {
     "id": "doc-004-data-quality",
-    "content": "NEXUS AI — Data Quality Requirements for AI Systems\nDocument ID: DATA-001 | Version: 2.0 (UPDATED 2026-03-01 — Legal review)\n\n1. Data Freshness\nPOLICY UPDATE: Documents ingested into the knowledge base must not be older than\n60 days for compliance-related queries (reduced from 90 days per Legal directive).\nNon-compliance documents may have a maximum age of 120 days.\n\n2. Source Quality\nAll knowledge base documents must originate from approved internal sources.\nExternal sources require sign-off from the Legal team before ingestion.",
+    "content": "NEXUS AI — Data Quality Requirements for AI Systems\nDocument ID: DATA-001 | Version: 2.0 (UPDATED 2026-03-01 — Legal review)\n\n1. Data Freshness\nPOLICY UPDATE: Documents ingested into the knowledge base must not be older than\n60 days for compliance-related queries. This applies to all compliance use cases.\nNon-compliance documents may have a maximum age of 120 days.\n\n2. Source Quality\nAll knowledge base documents must originate from approved internal sources.\nExternal sources require sign-off from the Legal team before ingestion.",
     "metadata": { "version": "2.0", "topic": "data-quality" },
     "assertion": "60"
   }
